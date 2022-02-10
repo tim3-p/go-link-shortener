@@ -3,6 +3,8 @@ package app
 import (
 	"io"
 	"net/http"
+
+	"github.com/go-chi/chi"
 )
 
 var (
@@ -23,41 +25,37 @@ var (
 	}
 )
 
-func CommonHandler(w http.ResponseWriter, r *http.Request) {
+func NewRouter() chi.Router {
+	r := chi.NewRouter()
+	r.Get("/{ID}", GetHandler)
+	r.Post("/", PostHandler)
+	return r
+}
 
-	switch r.Method {
-	case http.MethodGet:
+func GetHandler(w http.ResponseWriter, r *http.Request) {
+	urlID := chi.URLParam(r, "ID")
 
-		urlID := r.URL.Path[1:]
+	if v, found := urlBase[urlID]; found {
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		w.Header().Set("Location", "http://localhost:8080/"+v)
+	} else {
+		http.Error(w, "ID not found", http.StatusBadRequest)
+	}
+}
 
-		if v, found := urlBase[urlID]; found {
-			w.WriteHeader(http.StatusTemporaryRedirect)
-			w.Header().Set("Location", "http://localhost:8080/"+v)
-		} else {
-			http.Error(w, "ID not found", http.StatusBadRequest)
-		}
+func PostHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
 
-	case http.MethodPost:
-		b, err := io.ReadAll(r.Body)
-		defer r.Body.Close()
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if v, found := urlBaseReverse[string(b)]; found {
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(v))
-		} else {
-			http.Error(w, "This logic will be implemented in future", http.StatusBadRequest)
-		}
-
-		return
-
-	default:
-		http.Error(w, "Unsupported method, use POST or GET method", http.StatusBadRequest)
-		return
+	if v, found := urlBaseReverse[string(b)]; found {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(v))
+	} else {
+		http.Error(w, "This logic will be implemented in future", http.StatusBadRequest)
 	}
 }
