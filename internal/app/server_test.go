@@ -39,14 +39,6 @@ func TestRouter(t *testing.T) {
 		want    want
 	}{
 		{
-			name:   "test for DELETE method",
-			method: http.MethodDelete,
-			want: want{
-				statusCode: 400,
-			},
-			request: "/",
-		},
-		{
 			name:   "test for POST method",
 			method: http.MethodPost,
 			want: want{
@@ -58,7 +50,7 @@ func TestRouter(t *testing.T) {
 			name:   "test for GET method",
 			method: http.MethodGet,
 			want: want{
-				statusCode: 307,
+				statusCode: 400,
 			},
 			request: "/fgRth",
 		},
