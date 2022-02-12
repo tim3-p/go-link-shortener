@@ -43,5 +43,5 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	urlHash := pkg.HashURL(b)
 	urlBase[urlHash] = string(b)
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(urlHash))
+	w.Write([]byte(configs.DefaultAddress + urlHash))
 }
