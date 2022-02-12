@@ -40,7 +40,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlHash := pkg.HashUrl(b)
+	urlHash := pkg.HashURL(b)
 	urlBase[urlHash] = string(b)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(urlHash))
