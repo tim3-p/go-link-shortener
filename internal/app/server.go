@@ -6,24 +6,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/tim3-p/go-link-shortener/configs"
+	"github.com/tim3-p/go-link-shortener/internal/pkg"
 )
 
 var (
-	urlBase = map[string]string{
-		"fgRth": "http://habr.com/aaa",
-		"tYrg4": "http://codewars.com/aaa",
-		"l5Fg3": "http://ru-tracker.com/aaa",
-		"tXO2A": "http://gitlab.com/aaa",
-		"DtSX":  "http://ovaop0.biz/aa",
-	}
-
-	urlBaseReverse = map[string]string{
-		"http://habr.com":       "http://localhost:8080/fgRth",
-		"http://codewars.com":   "http://localhost:8080/tYrg4",
-		"http://ru-tracker.com": "http://localhost:8080/l5Fg3",
-		"http://gitlab.com":     "http://localhost:8080/tXO2A",
-		"http://ovaop0.biz":     "http://localhost:8080/DtSX",
-	}
+	urlBase = make(map[string]string)
 )
 
 func NewRouter() chi.Router {
@@ -53,10 +40,8 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if v, found := urlBaseReverse[string(b)]; found {
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(v))
-	} else {
-		http.Error(w, "This logic will be implemented in future", http.StatusBadRequest)
-	}
+	urlHash := pkg.HashUrl(b)
+	urlBase[urlHash] = string(b)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(urlHash))
 }
