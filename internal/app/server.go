@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/tim3-p/go-link-shortener/configs"
 )
 
 var (
@@ -37,7 +38,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	if v, found := urlBase[urlID]; found {
 		w.WriteHeader(http.StatusTemporaryRedirect)
-		w.Header().Set("Location", "http://localhost:8080/"+v)
+		w.Header().Set("Location", configs.DefaultAddress+v)
 	} else {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 	}
