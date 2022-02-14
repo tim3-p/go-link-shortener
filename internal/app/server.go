@@ -7,10 +7,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/tim3-p/go-link-shortener/configs"
 	"github.com/tim3-p/go-link-shortener/internal/pkg"
-)
-
-var (
-	urlBase = make(map[string]string)
+	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
 func NewRouter() chi.Router {
@@ -23,7 +20,7 @@ func NewRouter() chi.Router {
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
-	if v, found := urlBase[urlID]; found {
+	if v, found := storage.Get(urlID); found {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		w.Header().Set("Location", configs.DefaultAddress+v)
 	} else {
@@ -41,7 +38,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
-	urlBase[urlHash] = string(b)
+	storage.Add(urlHash, string(b))
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.DefaultAddress + urlHash))
 }
