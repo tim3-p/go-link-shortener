@@ -1,15 +1,23 @@
 package storage
 
+import "errors"
+
 var urlBase = make(map[string]string)
 
-func Add(key, value string) {
-	urlBase[key] = value
+type Repository interface {
+	Add(key, value string) error
+	Get(key string) (string, error)
 }
 
-func Get(key string) (string, bool) {
+func Add(key, value string) error {
+	urlBase[key] = value
+	return nil
+}
+
+func Get(key string) (string, error) {
 	if value, ok := urlBase[key]; ok {
-		return value, true
+		return value, nil
 	} else {
-		return "", false
+		return "", errors.New("key not found")
 	}
 }
