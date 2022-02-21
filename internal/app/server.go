@@ -25,8 +25,9 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Location", configs.DefaultAddress+v)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	//w.Header().Set("Location", configs.DefaultAddress+v)
+	//w.WriteHeader(http.StatusTemporaryRedirect)
+	http.Redirect(w, r, configs.DefaultAddress+v, http.StatusTemporaryRedirect)
 	w.Write(nil)
 }
 
