@@ -27,7 +27,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//w.Header().Set("Location", configs.DefaultAddress+v)
 	//w.WriteHeader(http.StatusTemporaryRedirect)
-	http.Redirect(w, r, configs.DefaultAddress+v, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
 	w.Write(nil)
 }
 
