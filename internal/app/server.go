@@ -57,8 +57,8 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlHash := pkg.HashURL([]byte(req.Url))
-	storage.Add(urlHash, string(req.Url))
+	urlHash := pkg.HashURL([]byte(req.URL))
+	storage.Add(urlHash, string(req.URL))
 
 	res := models.ShortenResponse{Result: configs.DefaultAddress + urlHash}
 
