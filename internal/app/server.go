@@ -1,11 +1,13 @@
 package app
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/tim3-p/go-link-shortener/configs"
+	"github.com/tim3-p/go-link-shortener/internal/models"
 	"github.com/tim3-p/go-link-shortener/internal/pkg"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
@@ -14,6 +16,7 @@ func NewRouter() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/{ID}", GetHandler)
 	r.Post("/", PostHandler)
+	r.Post("/api/shorten", ShortenHandler)
 	return r
 }
 
@@ -44,4 +47,28 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	storage.Add(urlHash, string(b))
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.DefaultAddress + urlHash))
+}
+
+func ShortenHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.ShortenRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	urlHash := pkg.HashURL([]byte(req.Url))
+	storage.Add(urlHash, string(req.Url))
+
+	res := models.ShortenResponse{Result: configs.DefaultAddress + urlHash}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonRes)
 }
