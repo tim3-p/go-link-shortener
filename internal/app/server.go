@@ -68,8 +68,8 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Add("Accept", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonRes)
 }
