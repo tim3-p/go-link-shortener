@@ -45,7 +45,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	urlHash := pkg.HashURL(b)
 	storage.Add(urlHash, string(b))
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(configs.EnvConfig.BaseURL + urlHash))
+	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
 
 func ShortenHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +59,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	urlHash := pkg.HashURL([]byte(req.URL))
 	storage.Add(urlHash, string(req.URL))
 
-	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + urlHash}
+	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
 
 	jsonRes, err := json.Marshal(res)
 	if err != nil {
