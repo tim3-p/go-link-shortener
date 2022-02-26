@@ -7,3 +7,4 @@ type Config struct {
 }
 
 var EnvConfig Config
+
