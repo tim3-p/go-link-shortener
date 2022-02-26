@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tim3-p/go-link-shortener/internal/configs"
+	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path string) (*http.Response, string) {
@@ -24,7 +26,14 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path string) (*http.
 }
 
 func TestRouter(t *testing.T) {
-	r := NewRouter()
+	var repository storage.Repository
+	if configs.EnvConfig.FileStoragePath == "" {
+		repository = storage.NewMapRepository()
+	}
+
+	handler := NewAppHandler(repository)
+
+	r := NewRouter(handler)
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 

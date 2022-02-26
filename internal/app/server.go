@@ -12,18 +12,26 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
-func NewRouter() chi.Router {
+type AppHandler struct {
+	storage storage.Repository
+}
+
+func NewAppHandler(s storage.Repository) *AppHandler {
+	return &AppHandler{storage: s}
+}
+
+func NewRouter(handler *AppHandler) chi.Router {
 	r := chi.NewRouter()
-	r.Get("/{ID}", GetHandler)
-	r.Post("/", PostHandler)
-	r.Post("/api/shorten", ShortenHandler)
+	r.Get("/{ID}", handler.GetHandler)
+	r.Post("/", handler.PostHandler)
+	r.Post("/api/shorten", handler.ShortenHandler)
 	return r
 }
 
-func GetHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
-	v, err := storage.Get(urlID)
+	v, err := h.storage.Get(urlID)
 	if err != nil {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
@@ -33,7 +41,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(nil)
 }
 
-func PostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
@@ -43,12 +51,12 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
-	storage.Add(urlHash, string(b))
+	h.storage.Add(urlHash, string(b))
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
 
-func ShortenHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,7 +65,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL([]byte(req.URL))
-	storage.Add(urlHash, string(req.URL))
+	h.storage.Add(urlHash, string(req.URL))
 
 	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
 
