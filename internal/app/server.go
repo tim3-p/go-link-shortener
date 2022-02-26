@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/tim3-p/go-link-shortener/configs"
+	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/models"
 	"github.com/tim3-p/go-link-shortener/internal/pkg"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
@@ -28,8 +28,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
-	//w.Header().Set("Location", configs.DefaultAddress+v)
-	//w.WriteHeader(http.StatusTemporaryRedirect)
+
 	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
 	w.Write(nil)
 }
@@ -46,7 +45,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 	urlHash := pkg.HashURL(b)
 	storage.Add(urlHash, string(b))
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(configs.DefaultAddress + urlHash))
+	w.Write([]byte(configs.EnvConfig.BaseURL + urlHash))
 }
 
 func ShortenHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +59,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	urlHash := pkg.HashURL([]byte(req.URL))
 	storage.Add(urlHash, string(req.URL))
 
-	res := models.ShortenResponse{Result: configs.DefaultAddress + urlHash}
+	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + urlHash}
 
 	jsonRes, err := json.Marshal(res)
 	if err != nil {
