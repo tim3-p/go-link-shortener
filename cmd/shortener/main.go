@@ -44,5 +44,5 @@ func main() {
 	handler := app.NewAppHandler(repository)
 
 	r := app.NewRouter(handler)
-	http.ListenAndServe(configs.EnvConfig.ServerAddress, app.GzipHandle(r))
+	http.ListenAndServe(configs.EnvConfig.ServerAddress, r)
 }

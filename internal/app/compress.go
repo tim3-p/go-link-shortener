@@ -12,6 +12,10 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+func (w gzipWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
 func GzipHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
