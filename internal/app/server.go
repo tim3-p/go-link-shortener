@@ -92,7 +92,7 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(mapRes) == 0 {
+	if mapRes == nil {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
