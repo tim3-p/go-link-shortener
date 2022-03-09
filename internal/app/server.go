@@ -22,7 +22,7 @@ func NewAppHandler(s storage.Repository) *AppHandler {
 
 func NewRouter(handler *AppHandler) chi.Router {
 	r := chi.NewRouter()
-	r.Use(GzipHandle)
+	r.Use(GzipHandle, AuthHandle)
 	r.Get("/{ID}", handler.GetHandler)
 	r.Post("/", handler.PostHandler)
 	r.Post("/api/shorten", handler.ShortenHandler)
@@ -94,7 +94,6 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 
 	if len(mapRes) == 0 {
 		w.WriteHeader(http.StatusNoContent)
-		w.Write(nil)
 		return
 	}
 
