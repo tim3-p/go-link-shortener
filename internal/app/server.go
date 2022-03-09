@@ -101,7 +101,7 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 	res := models.UserUrlsResponse{}
 
 	for key, element := range mapRes {
-		item := models.UserUrl{ShortUrl: key, OriginalUrl: element}
+		item := models.UserUrl{ShortUrl: configs.EnvConfig.BaseURL + "/" + key, OriginalUrl: element}
 		res.UserUrls = append(res.UserUrls, item)
 	}
 
