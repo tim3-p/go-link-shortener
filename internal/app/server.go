@@ -26,6 +26,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Get("/{ID}", handler.GetHandler)
 	r.Post("/", handler.PostHandler)
 	r.Post("/api/shorten", handler.ShortenHandler)
+	r.Get("/api/user/urls", handler.UserUrls)
 	return r
 }
 
@@ -69,6 +70,40 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	h.storage.Add(urlHash, string(req.URL))
 
 	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Add("Accept", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonRes)
+}
+
+func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
+
+	mapRes, err := h.storage.GetUserURLs()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(mapRes) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		w.Write(nil)
+		return
+	}
+
+	res := models.UserUrlsResponse{}
+
+	for key, element := range mapRes {
+		item := models.UserUrl{ShortUrl: key, OriginalUrl: element}
+		res.UserUrls = append(res.UserUrls, item)
+	}
 
 	jsonRes, err := json.Marshal(res)
 	if err != nil {

@@ -22,3 +22,7 @@ func (r *MapRepository) Get(key string) (string, error) {
 		return "", errors.New("key not found")
 	}
 }
+
+func (r *MapRepository) GetUserURLs() (map[string]string, error) {
+	return r.urlBase, nil
+}

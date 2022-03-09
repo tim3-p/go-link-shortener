@@ -57,3 +57,24 @@ func (r *FileRepository) Get(key string) (string, error) {
 	}
 	return "", errors.New("key not found")
 }
+
+func (r *FileRepository) GetUserURLs() (map[string]string, error) {
+	result := make(map[string]string)
+
+	file, err := os.OpenFile(r.fileStoragePath, os.O_RDONLY|os.O_CREATE, 0777)
+	if err != nil {
+		return result, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	for {
+		record := &FileRecord{}
+		if err := decoder.Decode(&record); err == io.EOF {
+			break
+		} else if err != nil {
+			result[record.Key] = record.Value
+		}
+	}
+	return result, nil
+}
