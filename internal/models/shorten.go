@@ -8,11 +8,11 @@ type ShortenResponse struct {
 	Result string `json:"result"`
 }
 
-type UserUrl struct {
-	ShortUrl    string `json:"short_url"`
-	OriginalUrl string `json:"original_url"`
+type UserURL struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
-type UserUrlsResponse struct {
-	UserUrls []UserUrl
+type UserURLsResponse struct {
+	UserURLs []UserURL
 }

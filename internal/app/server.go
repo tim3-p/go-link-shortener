@@ -98,11 +98,11 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := models.UserUrlsResponse{}
+	res := models.UserURLsResponse{}
 
 	for key, element := range mapRes {
-		item := models.UserUrl{ShortUrl: configs.EnvConfig.BaseURL + "/" + key, OriginalUrl: element}
-		res.UserUrls = append(res.UserUrls, item)
+		item := models.UserURL{ShortURL: configs.EnvConfig.BaseURL + "/" + key, OriginalURL: element}
+		res.UserURLs = append(res.UserURLs, item)
 	}
 
 	jsonRes, err := json.Marshal(res)
