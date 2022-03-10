@@ -18,6 +18,8 @@ type cipherData struct {
 
 var cipherVal *cipherData
 
+var userIDVar string
+
 func cipherInit() error {
 	if cipherVal == nil {
 		key, err := generateRandom(2 * aes.BlockSize)
@@ -78,16 +80,16 @@ func decrypt(token string) (string, error) {
 
 func AuthHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := uuid.NewString()
+		userIDVar := uuid.NewString()
 		validAccessToken := false
 		if c, err := r.Cookie("Token"); err == nil {
 			if decrypted, err := decrypt(c.Value); err == nil {
-				userID = decrypted
+				userIDVar = decrypted
 				validAccessToken = true
 			}
 		}
 		if !validAccessToken {
-			encrypted, err := encrypt(userID)
+			encrypted, err := encrypt(userIDVar)
 			if err != nil {
 				http.Error(w, "Can not encrypt token", http.StatusInternalServerError)
 				return

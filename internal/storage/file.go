@@ -12,15 +12,16 @@ type FileRepository struct {
 }
 
 type FileRecord struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	UserID string `json:"user_id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
 }
 
 func NewFileRepository(fileStoragePath string) *FileRepository {
 	return &FileRepository{fileStoragePath: fileStoragePath}
 }
 
-func (r *FileRepository) Add(key, value string) error {
+func (r *FileRepository) Add(key, value, userID string) error {
 	file, err := os.OpenFile(r.fileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
 		return err
@@ -28,14 +29,14 @@ func (r *FileRepository) Add(key, value string) error {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	err = encoder.Encode(&FileRecord{Key: key, Value: value})
+	err = encoder.Encode(&FileRecord{UserID: userID, Key: key, Value: value})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *FileRepository) Get(key string) (string, error) {
+func (r *FileRepository) Get(key, userID string) (string, error) {
 	file, err := os.OpenFile(r.fileStoragePath, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return "", err
@@ -51,14 +52,14 @@ func (r *FileRepository) Get(key string) (string, error) {
 			return "", err
 		}
 
-		if record.Key == key {
+		if record.Key == key && record.UserID == userID {
 			return record.Value, nil
 		}
 	}
 	return "", errors.New("key not found")
 }
 
-func (r *FileRepository) GetUserURLs() (map[string]string, error) {
+func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	file, err := os.OpenFile(r.fileStoragePath, os.O_RDONLY|os.O_CREATE, 0777)

@@ -33,7 +33,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
-	v, err := h.storage.Get(urlID)
+	v, err := h.storage.Get(urlID, userIDVar)
 	if err != nil {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
@@ -53,7 +53,7 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
-	h.storage.Add(urlHash, string(b))
+	h.storage.Add(urlHash, string(b), userIDVar)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
@@ -67,7 +67,7 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL([]byte(req.URL))
-	h.storage.Add(urlHash, string(req.URL))
+	h.storage.Add(urlHash, string(req.URL), userIDVar)
 
 	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
 
@@ -85,14 +85,14 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 
-	mapRes, err := h.storage.GetUserURLs()
+	mapRes, err := h.storage.GetUserURLs(userIDVar)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if mapRes == nil {
+	if len(mapRes) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
