@@ -33,10 +33,10 @@ func NewRouter(handler *AppHandler) chi.Router {
 
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
-	log.Println(urlID)
+	log.Printf("GetHandler urlID - %s", urlID)
 
 	v, err := h.storage.Get(urlID, userIDVar)
-	log.Println(v)
+	log.Printf("GetHandler v - %s", v)
 	if err != nil {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
@@ -61,8 +61,8 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	urlHash := pkg.HashURL(b)
 
-	log.Println(string(b))
-	log.Println(urlHash)
+	log.Printf("PostHandler b - %s", string(b))
+	log.Printf("PostHandler urlHash - %s", urlHash)
 
 	h.storage.Add(urlHash, string(b), userIDVar)
 	w.WriteHeader(http.StatusCreated)
