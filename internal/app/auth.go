@@ -80,11 +80,11 @@ func decrypt(token string) (string, error) {
 
 func AuthHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userIDVar := uuid.NewString()
+		userID := uuid.NewString()
 		validAccessToken := false
 		if c, err := r.Cookie("Token"); err == nil {
 			if decrypted, err := decrypt(c.Value); err == nil {
-				userIDVar = decrypted
+				userID = decrypted
 				validAccessToken = true
 			}
 		}
@@ -101,6 +101,7 @@ func AuthHandle(next http.Handler) http.Handler {
 			}
 			http.SetCookie(w, c)
 		}
+		userIDVar = userID
 		next.ServeHTTP(w, r)
 	})
 }
