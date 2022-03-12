@@ -22,8 +22,8 @@ func (r *MapRepository) Add(key, value, userID string) error {
 func (r *MapRepository) Get(key, userID string) (string, error) {
 	userMap := r.userLinks[userID]
 	for _, arrValue := range userMap {
-		if value, ok := r.urlBase[arrValue]; ok {
-			return value, nil
+		if arrValue == key {
+			return r.urlBase[arrValue], nil
 		}
 	}
 
