@@ -38,10 +38,13 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
-
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Header().Set("Location", v)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	/*
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("Location", v)
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		w.Write(nil)
+	*/
+	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
 	w.Write(nil)
 }
 
