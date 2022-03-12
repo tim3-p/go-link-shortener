@@ -41,6 +41,10 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
 	w.Write(nil)
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Location", v)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
