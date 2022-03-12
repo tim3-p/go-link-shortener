@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -32,8 +33,10 @@ func NewRouter(handler *AppHandler) chi.Router {
 
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
+	log.Println(urlID)
 
 	v, err := h.storage.Get(urlID, userIDVar)
+	log.Println(v)
 	if err != nil {
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
@@ -57,6 +60,10 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
+
+	log.Println(string(b))
+	log.Println(urlHash)
+
 	h.storage.Add(urlHash, string(b), userIDVar)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
