@@ -52,7 +52,7 @@ func (r *FileRepository) Get(key, userID string) (string, error) {
 			return "", err
 		}
 
-		if record.Key == key && record.UserID == userID {
+		if record.Key == key {
 			return record.Value, nil
 		}
 	}
