@@ -89,7 +89,7 @@ func AuthHandle(next http.Handler) http.Handler {
 			}
 		}
 		if !validAccessToken {
-			encrypted, err := encrypt(userIDVar)
+			encrypted, err := encrypt(userID)
 			if err != nil {
 				http.Error(w, "Can not encrypt token", http.StatusInternalServerError)
 				return
