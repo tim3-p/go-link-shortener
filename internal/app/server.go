@@ -38,6 +38,7 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	v, err := h.storage.Get(urlID, userIDVar)
 	log.Printf("GetHandler v - %s", v)
 	if err != nil {
+		log.Printf("GetHandler err - %s", err.Error())
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}

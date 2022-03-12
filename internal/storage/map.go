@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"log"
 )
 
 type MapRepository struct {
@@ -21,6 +22,13 @@ func (r *MapRepository) Add(key, value, userID string) error {
 
 func (r *MapRepository) Get(key, userID string) (string, error) {
 	userMap := r.userLinks[userID]
+	log.Printf("Get userLinks - %s", r.userLinks)
+	log.Printf("Get userMap - %s", userMap)
+
+	log.Printf("Get key - %s", key)
+
+	log.Printf("Get userID - %s", userID)
+
 	for _, arrValue := range userMap {
 		if arrValue == key {
 			return r.urlBase[arrValue], nil
