@@ -49,8 +49,10 @@ func main() {
 			log.Fatal(err)
 		}
 	} else if configs.EnvConfig.FileStoragePath == "" {
+		log.Printf("NewMapRepository")
 		repository = storage.NewMapRepository()
 	} else {
+		log.Printf("NewFileRepository")
 		repository = storage.NewFileRepository(configs.EnvConfig.FileStoragePath)
 	}
 
