@@ -44,7 +44,7 @@ func main() {
 		}
 		defer conn.Close(context.Background())
 
-		repository, err = storage.NewDbRepository(conn)
+		repository, err = storage.NewDBRepository(conn)
 		if err != nil {
 			log.Fatal(err)
 		}
