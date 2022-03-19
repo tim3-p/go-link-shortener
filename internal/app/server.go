@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -108,6 +109,7 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 	mapRes, err := h.storage.GetUserURLs(userIDVar)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
