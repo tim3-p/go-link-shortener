@@ -24,27 +24,28 @@ func (r *MapRepository) Add(key, value, userID string) error {
 }
 
 func (r *MapRepository) Get(key, userID string) (string, error) {
-	/*
-		log.Printf("Get userID - %s", userID)
-		userMap := r.userLinks[userID]
-		log.Printf("Get userLinks - %s", r.userLinks)
-		log.Printf("Get userMap - %s", userMap)
 
-		log.Printf("Get key - %s", key)
+	log.Printf("Get userID - %s", userID)
+	userMap := r.userLinks[userID]
+	log.Printf("Get userLinks - %s", r.userLinks)
+	log.Printf("Get userMap - %s", userMap)
 
-		for _, arrValue := range userMap {
-			if arrValue == key {
-				return r.urlBase[arrValue], nil
-			}
+	log.Printf("Get key - %s", key)
+
+	for _, arrValue := range userMap {
+		if arrValue == key {
+			return r.urlBase[arrValue], nil
 		}
-
-		return "", errors.New("key not found")
-	*/
-	if value, ok := r.urlBase[key]; ok {
-		return value, nil
-	} else {
-		return "", errors.New("key not found")
 	}
+
+	return "", errors.New("key not found")
+	/*
+		if value, ok := r.urlBase[key]; ok {
+			return value, nil
+		} else {
+			return "", errors.New("key not found")
+		}
+	*/
 }
 
 func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
