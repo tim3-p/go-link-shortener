@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 
 	"github.com/caarlos0/env"
+	"github.com/jackc/pgx/v4"
 	"github.com/tim3-p/go-link-shortener/internal/app"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
@@ -35,19 +37,18 @@ func main() {
 	SetCommandLineFlags()
 	var repository storage.Repository
 
-	/*
-		if configs.EnvConfig.DatabaseDSN != "" {
-			conn, err := pgx.Connect(context.Background(), configs.EnvConfig.DatabaseDSN)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer conn.Close(context.Background())
+	if configs.EnvConfig.DatabaseDSN != "" {
+		conn, err := pgx.Connect(context.Background(), configs.EnvConfig.DatabaseDSN)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer conn.Close(context.Background())
 
-			repository, err = storage.NewDBRepository(conn)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else*/if configs.EnvConfig.FileStoragePath == "" {
+		repository, err = storage.NewDBRepository(conn)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if configs.EnvConfig.FileStoragePath == "" {
 		repository = storage.NewMapRepository()
 	} else {
 		repository = storage.NewFileRepository(configs.EnvConfig.FileStoragePath)
