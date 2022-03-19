@@ -49,6 +49,8 @@ func (r *MapRepository) Get(key, userID string) (string, error) {
 }
 
 func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
+	log.Printf("MapRepository")
+	log.Printf("Get userID - %s", userID)
 	userMap := r.userLinks[userID]
 	result := make(map[string]string)
 

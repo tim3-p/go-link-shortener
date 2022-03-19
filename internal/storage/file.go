@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"os"
 )
 
@@ -62,7 +61,7 @@ func (r *FileRepository) Get(key, userID string) (string, error) {
 
 func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
-	log.Printf("FileRepository")
+
 	file, err := os.OpenFile(r.fileStoragePath, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
 		return result, err
