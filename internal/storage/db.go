@@ -47,7 +47,7 @@ func (r *DBRepository) Get(key, userID string) (string, error) {
 
 func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
-	sql := `select short_url, original_url from urls where user_id = $1`
+	sql := `select short_url, original_url from urls_base where user_id = $1`
 	rows, err := r.connection.Query(context.Background(), sql, userID)
 	if err != nil {
 		return nil, err
