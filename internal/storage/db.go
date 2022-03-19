@@ -15,7 +15,9 @@ func NewDBRepository(pgConnection *pgx.Conn) (*DBRepository, error) {
 		short_url text not null primary key,
 		original_url text,
 		user_id      text		
-	);`
+	); 
+	create unique index if not exists original_url_constrain on urls_base(original_url);`
+
 	_, err := pgConnection.Exec(context.Background(), sql)
 	if err != nil {
 		return nil, err
