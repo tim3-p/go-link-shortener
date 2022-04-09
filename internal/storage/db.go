@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -14,7 +15,8 @@ func NewDBRepository(pgConnection *pgx.Conn) (*DBRepository, error) {
 	sql := `create table if not exists urls_base (
 		short_url text not null primary key,
 		original_url text,
-		user_id      text		
+		user_id      text,
+		deleted_at timestamp default null		
 	); 
 	create unique index if not exists original_url_constrain on urls_base(original_url);`
 
@@ -35,7 +37,7 @@ func (r *DBRepository) Add(key, value, userID string) error {
 }
 
 func (r *DBRepository) Get(key, userID string) (string, error) {
-	sql := `select original_url from urls_base where short_url = $1`
+	sql := `select original_url from urls_base where short_url = $1 and deleted_at is null`
 	row := r.connection.QueryRow(context.Background(), sql, key)
 	var value string
 	err := row.Scan(&value)
@@ -47,7 +49,7 @@ func (r *DBRepository) Get(key, userID string) (string, error) {
 
 func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
-	sql := `select short_url, original_url from urls_base where user_id = $1`
+	sql := `select short_url, original_url from urls_base where user_id = $1 and deleted_at is null`
 	rows, err := r.connection.Query(context.Background(), sql, userID)
 	if err != nil {
 		return nil, err
@@ -63,4 +65,13 @@ func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 		result[shortURL] = originalURL
 	}
 	return result, nil
+}
+
+func (r *DBRepository) Delete(keys []string, userID string) error {
+	sql := `update urls_base set deleted_at = current_timestamp where short_url in ($1) and user_id = $2`
+	_, err := r.connection.Exec(context.Background(), sql, strings.Join(keys[:], ","), userID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

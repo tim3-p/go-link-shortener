@@ -79,3 +79,7 @@ func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 	}
 	return result, nil
 }
+
+func (r *FileRepository) Delete(keys []string, userID string) error {
+	return nil
+}

@@ -1,5 +1,10 @@
 package models
 
+type Task struct {
+	URLs   []string
+	UserID string
+}
+
 type ShortenRequest struct {
 	URL string `json:"url"`
 }
@@ -21,4 +26,8 @@ type ShortenBatchRequest struct {
 type ShortenBatchResponse struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
+}
+
+type DeleteBatchRequest struct {
+	ShortURL string `json:"short_url"`
 }

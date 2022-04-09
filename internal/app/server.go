@@ -16,10 +16,11 @@ import (
 
 type AppHandler struct {
 	storage storage.Repository
+	tChan   chan *models.Task
 }
 
-func NewAppHandler(s storage.Repository) *AppHandler {
-	return &AppHandler{storage: s}
+func NewAppHandler(s storage.Repository, tChan chan *models.Task) *AppHandler {
+	return &AppHandler{storage: s, tChan: make(chan *models.Task)}
 }
 
 func NewRouter(handler *AppHandler) chi.Router {
@@ -31,6 +32,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Get("/api/user/urls", handler.UserUrls)
 	r.Get("/ping", handler.DBPing)
 	r.Post("/api/shorten/batch", handler.ShortenBatchHandler)
+	r.Delete("/api/user/urls", handler.DeleteBatchHandler)
 
 	return r
 }
@@ -172,4 +174,26 @@ func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Add("Accept", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonRes)
+}
+
+func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) {
+	var req []models.DeleteBatchRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var urls []string
+	for _, value := range req {
+		urls = append(urls, value.ShortURL)
+	}
+
+	h.tChan <- &models.Task{
+		URLs:   urls,
+		UserID: userIDVar,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusAccepted)
 }
