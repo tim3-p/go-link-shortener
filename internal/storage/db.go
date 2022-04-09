@@ -2,7 +2,8 @@ package storage
 
 import (
 	"context"
-	"strings"
+	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -37,19 +38,21 @@ func (r *DBRepository) Add(key, value, userID string) error {
 }
 
 func (r *DBRepository) Get(key, userID string) (string, error) {
-	sql := `select original_url from urls_base where short_url = $1`
+	sql := `select original_url, deleted_at from urls_base where short_url = $1`
 	row := r.connection.QueryRow(context.Background(), sql, key)
 	var value string
-	//var deletedAt string
-	err := row.Scan(&value /*, &deletedAt*/)
+	var deletedAt string
+	err := row.Scan(&value, &deletedAt)
 	if err != nil {
 		return "", err
 	}
-	/*
-		if deletedAt != null {
-			return "", errors.New("URL is deleted")
-		}
-	*/
+
+	fmt.Println(deletedAt)
+
+	if deletedAt != "" {
+		return "", errors.New("URL is deleted")
+	}
+
 	return value, nil
 }
 
@@ -74,8 +77,8 @@ func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 }
 
 func (r *DBRepository) Delete(keys []string, userID string) error {
-	sql := `update urls_base set deleted_at = current_timestamp where short_url in ($1) and user_id = $2`
-	_, err := r.connection.Exec(context.Background(), sql, strings.Join(keys[:], ","), userID)
+	sql := `update urls_base set deleted_at = current_timestamp where short_url = any($1) and user_id = $2`
+	_, err := r.connection.Exec(context.Background(), sql, keys, userID)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -43,12 +44,12 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	v, err := h.storage.Get(urlID, userIDVar)
 	if err != nil {
-		/*
-			if errors.Is(err, errors.New("URL is deleted")) {
-				w.WriteHeader(http.StatusGone)
-				return
-			}
-		*/
+
+		if errors.Is(err, errors.New("URL is deleted")) {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
+
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
