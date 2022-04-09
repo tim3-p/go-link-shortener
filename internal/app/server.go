@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 
@@ -43,11 +42,12 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	v, err := h.storage.Get(urlID, userIDVar)
 	if err != nil {
-		if errors.Is(err, errors.New("URL is deleted")) {
-			w.WriteHeader(http.StatusGone)
-			return
-		}
-
+		/*
+			if errors.Is(err, errors.New("URL is deleted")) {
+				w.WriteHeader(http.StatusGone)
+				return
+			}
+		*/
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
@@ -183,20 +183,15 @@ func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) {
-	var req []models.DeleteBatchRequest
+	var req []string
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var urls []string
-	for _, value := range req {
-		urls = append(urls, value.ShortURL)
-	}
-
 	h.tChan <- &models.Task{
-		URLs:   urls,
+		URLs:   req,
 		UserID: userIDVar,
 	}
 
