@@ -41,13 +41,13 @@ func (r *DBRepository) Get(key, userID string) (string, error) {
 	sql := `select original_url, deleted_at from urls_base where short_url = $1`
 	row := r.connection.QueryRow(context.Background(), sql, key)
 	var value string
-	var deletedAt bool
+	var deletedAt string
 	err := row.Scan(&value, &deletedAt)
 	if err != nil {
 		return "", err
 	}
 
-	if deletedAt {
+	if deletedAt != "" {
 		return "", errors.New("URL is deleted")
 	}
 
