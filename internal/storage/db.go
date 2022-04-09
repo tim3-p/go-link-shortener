@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -46,11 +45,11 @@ func (r *DBRepository) Get(key, userID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	if deletedAt != "" {
-		return "", errors.New("URL is deleted")
-	}
-
+	/*
+		if deletedAt != null {
+			return "", errors.New("URL is deleted")
+		}
+	*/
 	return value, nil
 }
 
