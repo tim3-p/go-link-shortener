@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/tim3-p/go-link-shortener/internal/app"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
-	"github.com/tim3-p/go-link-shortener/internal/models"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
@@ -54,16 +53,17 @@ func main() {
 	} else {
 		repository = storage.NewFileRepository(configs.EnvConfig.FileStoragePath)
 	}
-	var tChan chan *models.Task
-	handler := app.NewAppHandler(repository, tChan)
 
 	for k := 0; k <= 3; k++ {
+
 		go func() {
-			for task := range tChan {
+			for task := range app.TChan {
 				repository.Delete(task.URLs, task.UserID)
 			}
 		}()
 	}
+
+	handler := app.NewAppHandler(repository)
 
 	r := app.NewRouter(handler)
 	http.ListenAndServe(configs.EnvConfig.ServerAddress, r)

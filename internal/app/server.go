@@ -14,13 +14,14 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
+var TChan = make(chan *models.Task)
+
 type AppHandler struct {
 	storage storage.Repository
-	tChan   chan *models.Task
 }
 
-func NewAppHandler(s storage.Repository, tChan chan *models.Task) *AppHandler {
-	return &AppHandler{storage: s, tChan: make(chan *models.Task)}
+func NewAppHandler(s storage.Repository) *AppHandler {
+	return &AppHandler{storage: s}
 }
 
 func NewRouter(handler *AppHandler) chi.Router {
@@ -190,7 +191,7 @@ func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	h.tChan <- &models.Task{
+	TChan <- &models.Task{
 		URLs:   req,
 		UserID: userIDVar,
 	}
