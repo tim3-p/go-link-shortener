@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -37,13 +38,19 @@ func (r *DBRepository) Add(key, value, userID string) error {
 }
 
 func (r *DBRepository) Get(key, userID string) (string, error) {
-	sql := `select original_url from urls_base where short_url = $1 and deleted_at is null`
+	sql := `select original_url, deleted_at from urls_base where short_url = $1`
 	row := r.connection.QueryRow(context.Background(), sql, key)
 	var value string
-	err := row.Scan(&value)
+	var deletedAt bool
+	err := row.Scan(&value, &deletedAt)
 	if err != nil {
 		return "", err
 	}
+
+	if deletedAt {
+		return "", errors.New("URL is deleted")
+	}
+
 	return value, nil
 }
 
