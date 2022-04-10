@@ -45,8 +45,8 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	v, err := h.storage.Get(urlID, userIDVar)
 	if err != nil {
 
-		if errors.Is(err, errors.New("URL is deleted")) {
-			w.WriteHeader(http.StatusGone)
+		if errors.Is(err, storage.ErrURLDeleted) {
+			http.Error(w, "URL deleted", http.StatusGone)
 			return
 		}
 

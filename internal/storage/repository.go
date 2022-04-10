@@ -1,5 +1,11 @@
 package storage
 
+import "errors"
+
+var (
+	ErrURLDeleted = errors.New("URL is deleted")
+)
+
 type Repository interface {
 	Add(key, value, userID string) error
 	Get(key, userID string) (string, error)
