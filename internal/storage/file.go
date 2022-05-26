@@ -52,7 +52,7 @@ func (r *FileRepository) Get(key, userID string) (string, error) {
 			return "", err
 		}
 
-		if record.Key == key {
+		if record.Key == key && record.UserID == userID {
 			return record.Value, nil
 		}
 	}
@@ -73,7 +73,7 @@ func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 		record := &FileRecord{}
 		if err := decoder.Decode(&record); err == io.EOF {
 			break
-		} else if err != nil {
+		} else if err != nil && record.UserID == userID {
 			result[record.Key] = record.Value
 		}
 	}
