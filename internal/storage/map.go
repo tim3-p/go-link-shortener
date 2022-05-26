@@ -60,3 +60,7 @@ func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
 
 	return result, nil
 }
+
+func (r *MapRepository) Delete(keys []string, userID string) error {
+	return nil
+}

@@ -1,5 +1,10 @@
 package models
 
+type Task struct {
+	URLs   []string
+	UserID string
+}
+
 type ShortenRequest struct {
 	URL string `json:"url"`
 }

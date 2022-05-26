@@ -54,6 +54,15 @@ func main() {
 		repository = storage.NewFileRepository(configs.EnvConfig.FileStoragePath)
 	}
 
+	for k := 0; k <= 3; k++ {
+
+		go func() {
+			for task := range app.TChan {
+				repository.Delete(task.URLs, task.UserID)
+			}
+		}()
+	}
+
 	handler := app.NewAppHandler(repository)
 
 	r := app.NewRouter(handler)

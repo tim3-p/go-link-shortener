@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/pkg"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
+
+var TChan = make(chan *models.Task)
 
 type AppHandler struct {
 	storage storage.Repository
@@ -31,6 +34,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Get("/api/user/urls", handler.UserUrls)
 	r.Get("/ping", handler.DBPing)
 	r.Post("/api/shorten/batch", handler.ShortenBatchHandler)
+	r.Delete("/api/user/urls", handler.DeleteBatchHandler)
 
 	return r
 }
@@ -40,6 +44,12 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	v, err := h.storage.Get(urlID, userIDVar)
 	if err != nil {
+
+		if errors.Is(err, storage.ErrURLDeleted) {
+			http.Error(w, "URL deleted", http.StatusGone)
+			return
+		}
+
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
@@ -172,4 +182,21 @@ func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Add("Accept", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonRes)
+}
+
+func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) {
+	var req []string
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	TChan <- &models.Task{
+		URLs:   req,
+		UserID: userIDVar,
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusAccepted)
 }
