@@ -23,17 +23,15 @@ func InitConfig() error {
 	if err != nil {
 		return err
 	}
-	SetCommandLineFlags()
 	return nil
 }
 
 func main() {
 	err := InitConfig()
-
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	SetCommandLineFlags()
 	var repository storage.Repository
 	if configs.EnvConfig.FileStoragePath == "" {
 		repository = storage.NewMapRepository()

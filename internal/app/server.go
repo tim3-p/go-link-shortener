@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -22,24 +23,32 @@ func NewAppHandler(s storage.Repository) *AppHandler {
 
 func NewRouter(handler *AppHandler) chi.Router {
 	r := chi.NewRouter()
-	r.Use(GzipHandle)
+	r.Use(GzipHandle, AuthHandle)
 	r.Get("/{ID}", handler.GetHandler)
 	r.Post("/", handler.PostHandler)
 	r.Post("/api/shorten", handler.ShortenHandler)
+	r.Get("/api/user/urls", handler.UserUrls)
 	return r
 }
 
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
+	log.Printf("GetHandler urlID - %s", urlID)
 
-	v, err := h.storage.Get(urlID)
+	v, err := h.storage.Get(urlID, userIDVar)
+	log.Printf("GetHandler v - %s", v)
 	if err != nil {
+		log.Printf("GetHandler err - %s", err.Error())
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
-	w.Write(nil)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Location", v)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+
+	//http.Redirect(w, r, v, http.StatusTemporaryRedirect)
+	//w.Write(nil)
 }
 
 func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +61,11 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
-	h.storage.Add(urlHash, string(b))
+
+	log.Printf("PostHandler b - %s", string(b))
+	log.Printf("PostHandler urlHash - %s", urlHash)
+
+	h.storage.Add(urlHash, string(b), userIDVar)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
@@ -66,7 +79,7 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL([]byte(req.URL))
-	h.storage.Add(urlHash, string(req.URL))
+	h.storage.Add(urlHash, string(req.URL), userIDVar)
 
 	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
 
@@ -79,5 +92,38 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Add("Accept", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonRes)
+}
+
+func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
+
+	mapRes, err := h.storage.GetUserURLs(userIDVar)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(mapRes) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	res := []models.UserURL{}
+
+	for key, element := range mapRes {
+		item := models.UserURL{ShortURL: configs.EnvConfig.BaseURL + "/" + key, OriginalURL: element}
+		res = append(res, item)
+	}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Add("Accept", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonRes)
 }
