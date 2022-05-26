@@ -60,8 +60,15 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	urlHash := pkg.HashURL(b)
 
-	h.storage.Add(urlHash, string(b), userIDVar)
-	w.WriteHeader(http.StatusCreated)
+	err = h.storage.Add(urlHash, string(b), userIDVar)
+	status, err := pkg.CheckDBError(err)
+
+	if err != nil {
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	w.WriteHeader(status)
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
 
@@ -74,7 +81,13 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL([]byte(req.URL))
-	h.storage.Add(urlHash, string(req.URL), userIDVar)
+	err := h.storage.Add(urlHash, string(req.URL), userIDVar)
+	status, err := pkg.CheckDBError(err)
+
+	if err != nil {
+		http.Error(w, err.Error(), status)
+		return
+	}
 
 	res := models.ShortenResponse{Result: configs.EnvConfig.BaseURL + "/" + urlHash}
 
@@ -86,7 +99,7 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Add("Accept", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 	w.Write(jsonRes)
 }
 
