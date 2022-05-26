@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -31,17 +30,16 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Post("/api/shorten", handler.ShortenHandler)
 	r.Get("/api/user/urls", handler.UserUrls)
 	r.Get("/ping", handler.DBPing)
+	r.Post("/api/shorten/batch", handler.ShortenBatchHandler)
+
 	return r
 }
 
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
-	log.Printf("GetHandler urlID - %s", urlID)
 
 	v, err := h.storage.Get(urlID, userIDVar)
-	log.Printf("GetHandler v - %s", v)
 	if err != nil {
-		log.Printf("GetHandler err - %s", err.Error())
 		http.Error(w, "ID not found", http.StatusBadRequest)
 		return
 	}
@@ -49,9 +47,6 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Location", v)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-
-	//http.Redirect(w, r, v, http.StatusTemporaryRedirect)
-	//w.Write(nil)
 }
 
 func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,9 +59,6 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	urlHash := pkg.HashURL(b)
-
-	log.Printf("PostHandler b - %s", string(b))
-	log.Printf("PostHandler urlHash - %s", urlHash)
 
 	h.storage.Add(urlHash, string(b), userIDVar)
 	w.WriteHeader(http.StatusCreated)
@@ -139,4 +131,32 @@ func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close(context.Background())
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request) {
+	var req []models.ShortenBatchRequest
+	var res []models.ShortenBatchResponse
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for _, value := range req {
+		urlHash := pkg.HashURL([]byte(value.OriginalURL))
+		h.storage.Add(urlHash, string(value.OriginalURL), userIDVar)
+
+		res = append(res, models.ShortenBatchResponse{CorrelationID: value.CorrelationID, ShortURL: configs.EnvConfig.BaseURL + "/" + urlHash})
+	}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Add("Accept", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonRes)
 }
