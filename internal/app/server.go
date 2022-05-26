@@ -20,12 +20,15 @@ func NewRouter() chi.Router {
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
-	if v, found := storage.Get(urlID); found {
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		w.Header().Set("Location", configs.DefaultAddress+v)
-	} else {
+	v, err := storage.Get(urlID)
+	if err != nil {
 		http.Error(w, "ID not found", http.StatusBadRequest)
+		return
 	}
+	//w.Header().Set("Location", configs.DefaultAddress+v)
+	//w.WriteHeader(http.StatusTemporaryRedirect)
+	http.Redirect(w, r, v, http.StatusTemporaryRedirect)
+	w.Write(nil)
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
