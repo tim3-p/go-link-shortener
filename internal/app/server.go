@@ -22,6 +22,7 @@ func NewAppHandler(s storage.Repository) *AppHandler {
 
 func NewRouter(handler *AppHandler) chi.Router {
 	r := chi.NewRouter()
+	r.Use(GzipHandle)
 	r.Get("/{ID}", handler.GetHandler)
 	r.Post("/", handler.PostHandler)
 	r.Post("/api/shorten", handler.ShortenHandler)

@@ -18,16 +18,21 @@ func SetCommandLineFlags() {
 	flag.Parse()
 }
 
-func InitConfig() {
+func InitConfig() error {
 	err := env.Parse(&configs.EnvConfig)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	SetCommandLineFlags()
+	return nil
 }
 
 func main() {
-	InitConfig()
+	err := InitConfig()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var repository storage.Repository
 	if configs.EnvConfig.FileStoragePath == "" {
