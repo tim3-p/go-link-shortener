@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/jackc/pgx/v4"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/models"
 	"github.com/tim3-p/go-link-shortener/internal/pkg"
@@ -28,6 +30,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Post("/", handler.PostHandler)
 	r.Post("/api/shorten", handler.ShortenHandler)
 	r.Get("/api/user/urls", handler.UserUrls)
+	r.Get("/ping", handler.DBPing)
 	return r
 }
 
@@ -126,4 +129,14 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Accept", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonRes)
+}
+
+func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
+	conn, err := pgx.Connect(context.Background(), configs.EnvConfig.DatabaseDSN)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer conn.Close(context.Background())
+	w.WriteHeader(http.StatusOK)
 }
