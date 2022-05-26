@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -10,11 +11,19 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
+func SetCommandLineFlags() {
+	flag.StringVar(&configs.EnvConfig.ServerAddress, "a", configs.EnvConfig.ServerAddress, "server http address")
+	flag.StringVar(&configs.EnvConfig.BaseURL, "b", configs.EnvConfig.BaseURL, "base url of shortener")
+	flag.StringVar(&configs.EnvConfig.FileStoragePath, "f", configs.EnvConfig.FileStoragePath, "file storage path")
+	flag.Parse()
+}
+
 func InitConfig() {
 	err := env.Parse(&configs.EnvConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
+	SetCommandLineFlags()
 }
 
 func main() {
