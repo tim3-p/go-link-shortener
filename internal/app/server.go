@@ -46,6 +46,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	return r
 }
 
+// GetHandler - Returns full link.
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
@@ -66,6 +67,7 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+// PostHandler - Crate and store short link.
 func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -89,6 +91,7 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(configs.EnvConfig.BaseURL + "/" + urlHash))
 }
 
+// ShortenHandler - Crate and store short link in json data.
 func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenRequest
 
@@ -120,6 +123,7 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonRes)
 }
 
+// UserUrls - Returns list of all user URLs.
 func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 
 	mapRes, err := h.storage.GetUserURLs(userIDVar)
@@ -153,6 +157,7 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonRes)
 }
 
+// DBPing - test connection with DB.
 func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
 	conn, err := pgx.Connect(context.Background(), configs.EnvConfig.DatabaseDSN)
 	if err != nil {
@@ -163,6 +168,7 @@ func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// ShortenBatchHandler - batch add new user URLs
 func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request) {
 	var req []models.ShortenBatchRequest
 	var res []models.ShortenBatchResponse
@@ -191,6 +197,7 @@ func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request)
 	w.Write(jsonRes)
 }
 
+// DeleteBatchHandler - batch delete list of URLs
 func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) {
 	var req []string
 
