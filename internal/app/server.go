@@ -16,16 +16,20 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/storage"
 )
 
+// Channel fot batch operations
 var TChan = make(chan *models.Task)
 
+// Application repo
 type AppHandler struct {
 	storage storage.Repository
 }
 
+// App Handler constructor
 func NewAppHandler(s storage.Repository) *AppHandler {
 	return &AppHandler{storage: s}
 }
 
+// Http router constructor
 func NewRouter(handler *AppHandler) chi.Router {
 	r := chi.NewRouter()
 	r.Use(GzipHandle, AuthHandle)
@@ -47,6 +51,15 @@ func NewRouter(handler *AppHandler) chi.Router {
 }
 
 // GetHandler - Returns full link.
+// Output:
+// # Request
+// GET /{ID}
+//
+// # Response
+// HTTP/1.1 307 OK
+// Content-Type: text/plain; charset=utf-8
+// Redirect to URL
+
 func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := chi.URLParam(r, "ID")
 
@@ -68,6 +81,14 @@ func (h *AppHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // PostHandler - Crate and store short link.
+// Output:
+// # Request
+// POST /
+//
+// # Response
+// HTTP/1.1 201 OK
+// Content-Type: text/plain; charset=utf-8
+// Response short URL
 func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -92,6 +113,20 @@ func (h *AppHandler) PostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ShortenHandler - Crate and store short link in json data.
+// Output:
+// # Request
+// POST /api/shorten
+//
+// {
+//   url: “<full URL>”
+// }
+//
+// # Response
+// HTTP/1.1 201 OK
+// Content-Type: application/json; charset=UTF-8
+// {
+//   “result”: “<short URL>”
+// }
 func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenRequest
 
@@ -124,6 +159,21 @@ func (h *AppHandler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // UserUrls - Returns list of all user URLs.
+// Output:
+// # Request
+// GET /api/user/urls
+//
+//
+// # Response
+// HTTP/1.1 200 OK
+// Content-Type: application/json; charset=UTF-8
+// [
+//   {
+//     “short_url“: “<short URL>”,
+//	   “original_url“: “<original URL>”
+//   },
+//    ...
+// ]
 func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 
 	mapRes, err := h.storage.GetUserURLs(userIDVar)
@@ -158,6 +208,13 @@ func (h *AppHandler) UserUrls(w http.ResponseWriter, r *http.Request) {
 }
 
 // DBPing - test connection with DB.
+// Output:
+// # Request
+// GET /
+//
+// # Response
+// HTTP/1.1 200 OK
+// Content-Type: text/plain; charset=utf-8
 func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
 	conn, err := pgx.Connect(context.Background(), configs.EnvConfig.DatabaseDSN)
 	if err != nil {
@@ -169,6 +226,27 @@ func (h *AppHandler) DBPing(w http.ResponseWriter, r *http.Request) {
 }
 
 // ShortenBatchHandler - batch add new user URLs
+// Output:
+// # Request
+// POST /api/shorten/batch
+//[
+// {
+//   “correlation_id”: “<string ID>”,
+//   “original_url”: “<URL for shorting>”,
+// },
+// ...
+// ]
+//
+// # Response
+// HTTP/1.1 201 OK
+// [
+//   {
+//      “correlation_id”: “<string ID>”,
+//      “short_url”: “<short URL>”
+//   },
+//    ...
+// ]
+// Content-Type: application/json; charset=UTF-8
 func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request) {
 	var req []models.ShortenBatchRequest
 	var res []models.ShortenBatchResponse
@@ -198,6 +276,13 @@ func (h *AppHandler) ShortenBatchHandler(w http.ResponseWriter, r *http.Request)
 }
 
 // DeleteBatchHandler - batch delete list of URLs
+// Output:
+// # Request
+// DELETE /api/user/urls
+//
+// # Response
+// HTTP/1.1 202 OK
+// Content-Type: application/json; charset=UTF-8
 func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) {
 	var req []string
 

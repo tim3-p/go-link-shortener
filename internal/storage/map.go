@@ -5,15 +5,18 @@ import (
 	"log"
 )
 
+// InMemory base descriptor
 type MapRepository struct {
 	urlBase   map[string]string
 	userLinks map[string][]string
 }
 
+// Constructor for InMemory storage
 func NewMapRepository() *MapRepository {
 	return &MapRepository{urlBase: make(map[string]string), userLinks: make(map[string][]string)}
 }
 
+// Add new short URL in map storage
 func (r *MapRepository) Add(key, value, userID string) error {
 	log.Printf("Add userID - %s", userID)
 	log.Printf("Add userLinks before - %s", r.userLinks)
@@ -23,6 +26,7 @@ func (r *MapRepository) Add(key, value, userID string) error {
 	return nil
 }
 
+// Get origin URL by short URL from map storage
 func (r *MapRepository) Get(key, userID string) (string, error) {
 
 	log.Printf("Get userID - %s", userID)
@@ -48,6 +52,7 @@ func (r *MapRepository) Get(key, userID string) (string, error) {
 	*/
 }
 
+// Get URLs by user ID from map storage
 func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
 	userMap := r.userLinks[userID]
 	result := make(map[string]string)
@@ -61,6 +66,7 @@ func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
 	return result, nil
 }
 
+// Delete URL for user ID from map storage
 func (r *MapRepository) Delete(keys []string, userID string) error {
 	return nil
 }
