@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// File base descriptor
+// FileRepository File base descriptor
 type FileRepository struct {
 	fileStoragePath string
 }
