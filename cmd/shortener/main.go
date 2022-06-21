@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -11,6 +12,12 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/app"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
+)
+
+var (
+	buildVersion string = "N/A"
+	buildDate    string = "N/A"
+	buildCommit  string = "N/A"
 )
 
 func SetCommandLineFlags() {
@@ -30,6 +37,8 @@ func InitConfig() error {
 }
 
 func main() {
+	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
+
 	err := InitConfig()
 	if err != nil {
 		log.Fatal(err)
