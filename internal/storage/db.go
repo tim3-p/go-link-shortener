@@ -7,10 +7,12 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
+// Connection descriptor for PostgreSQL
 type DBRepository struct {
 	connection *pgx.Conn
 }
 
+// Constructor for PostgreSQL connection pool
 func NewDBRepository(pgConnection *pgx.Conn) (*DBRepository, error) {
 	sql := `create table if not exists urls_base (
 		short_url text not null primary key,
@@ -27,6 +29,7 @@ func NewDBRepository(pgConnection *pgx.Conn) (*DBRepository, error) {
 	return &DBRepository{connection: pgConnection}, nil
 }
 
+// Insert new short URL in DB
 func (r *DBRepository) Add(key, value, userID string) error {
 	sql := `insert into urls_base (short_url, original_url, user_id) values ($1, $2, $3)`
 	_, err := r.connection.Exec(context.Background(), sql, key, value, userID)
@@ -36,6 +39,7 @@ func (r *DBRepository) Add(key, value, userID string) error {
 	return nil
 }
 
+// Select origin URL by short URL from DB
 func (r *DBRepository) Get(key, userID string) (string, error) {
 	sql := `select original_url, deleted_at from urls_base where short_url = $1`
 	row := r.connection.QueryRow(context.Background(), sql, key)
@@ -54,6 +58,7 @@ func (r *DBRepository) Get(key, userID string) (string, error) {
 	return value, nil
 }
 
+// Select URLs by user ID from DB
 func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
 	sql := `select short_url, original_url from urls_base where user_id = $1 and deleted_at = false`
@@ -74,6 +79,7 @@ func (r *DBRepository) GetUserURLs(userID string) (map[string]string, error) {
 	return result, nil
 }
 
+// Delete URL for user ID from DB
 func (r *DBRepository) Delete(keys []string, userID string) error {
 	sql := `update urls_base set deleted_at = true where short_url = any($1) and user_id = $2`
 	_, err := r.connection.Exec(context.Background(), sql, keys, userID)

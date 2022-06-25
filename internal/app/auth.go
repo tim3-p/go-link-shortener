@@ -18,6 +18,7 @@ type cipherData struct {
 
 var cipherVal *cipherData
 
+// Globat User ID identificator
 var userIDVar string
 
 func cipherInit() error {
@@ -45,6 +46,8 @@ func cipherInit() error {
 	}
 	return nil
 }
+
+// Random int generator
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rand.Read(b)
@@ -55,6 +58,7 @@ func generateRandom(size int) ([]byte, error) {
 	return b, nil
 }
 
+// Method for encrypt data
 func encrypt(userID string) (string, error) {
 	if err := cipherInit(); err != nil {
 		return "", err
@@ -63,6 +67,7 @@ func encrypt(userID string) (string, error) {
 	return hex.EncodeToString(encrypted), nil
 }
 
+// Method for decrypt data
 func decrypt(token string) (string, error) {
 	if err := cipherInit(); err != nil {
 		return "", err
@@ -78,6 +83,7 @@ func decrypt(token string) (string, error) {
 	return string(userID), nil
 }
 
+// Midleware for users auth
 func AuthHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID := uuid.NewString()

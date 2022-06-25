@@ -7,20 +7,24 @@ import (
 	"os"
 )
 
+// File base descriptor
 type FileRepository struct {
 	fileStoragePath string
 }
 
+// File record structure
 type FileRecord struct {
 	UserID string `json:"user_id"`
 	Key    string `json:"key"`
 	Value  string `json:"value"`
 }
 
+// Constructor for file storage
 func NewFileRepository(fileStoragePath string) *FileRepository {
 	return &FileRepository{fileStoragePath: fileStoragePath}
 }
 
+// Add new short URL in file storage
 func (r *FileRepository) Add(key, value, userID string) error {
 	file, err := os.OpenFile(r.fileStoragePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 	if err != nil {
@@ -36,6 +40,7 @@ func (r *FileRepository) Add(key, value, userID string) error {
 	return nil
 }
 
+// Get origin URL by short URL from file storage
 func (r *FileRepository) Get(key, userID string) (string, error) {
 	file, err := os.OpenFile(r.fileStoragePath, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {
@@ -59,6 +64,7 @@ func (r *FileRepository) Get(key, userID string) (string, error) {
 	return "", errors.New("key not found")
 }
 
+// Get URLs by user ID from file storage
 func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 	result := make(map[string]string)
 
@@ -80,6 +86,7 @@ func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 	return result, nil
 }
 
+// Delete URL for user ID from file storage
 func (r *FileRepository) Delete(keys []string, userID string) error {
 	return nil
 }
