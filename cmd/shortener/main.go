@@ -25,6 +25,7 @@ func SetCommandLineFlags() {
 	flag.StringVar(&configs.EnvConfig.BaseURL, "b", configs.EnvConfig.BaseURL, "base url of shortener")
 	flag.StringVar(&configs.EnvConfig.FileStoragePath, "f", configs.EnvConfig.FileStoragePath, "file storage path")
 	flag.StringVar(&configs.EnvConfig.DatabaseDSN, "d", configs.EnvConfig.DatabaseDSN, "database connection string")
+	flag.BoolVar(&configs.EnvConfig.EnableHTTPS, "s", configs.EnvConfig.EnableHTTPS, "HTTPS server")
 	flag.Parse()
 }
 
@@ -75,5 +76,14 @@ func main() {
 	handler := app.NewAppHandler(repository)
 
 	r := app.NewRouter(handler)
-	http.ListenAndServe(configs.EnvConfig.ServerAddress, r)
+
+	if configs.EnvConfig.EnableHTTPS {
+		err = app.GenerateCert()
+		if err != nil {
+			log.Fatal(err)
+		}
+		http.ListenAndServeTLS(configs.EnvConfig.ServerAddress, app.CertFile, app.KeyFile, r)
+	} else {
+		http.ListenAndServe(configs.EnvConfig.ServerAddress, r)
+	}
 }
