@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v4"
@@ -35,6 +36,12 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Get("/ping", handler.DBPing)
 	r.Post("/api/shorten/batch", handler.ShortenBatchHandler)
 	r.Delete("/api/user/urls", handler.DeleteBatchHandler)
+	r.Get("/debug/pprof/", pprof.Index)
+	r.Get("/debug/pprof/cmdline", pprof.Cmdline)
+	r.Get("/debug/pprof/profile", pprof.Profile)
+	r.Get("/debug/pprof/symbol", pprof.Symbol)
+	r.Get("/debug/pprof/trace", pprof.Trace)
+	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 
 	return r
 }
