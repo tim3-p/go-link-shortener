@@ -52,7 +52,7 @@ func (r *MapRepository) Get(key, userID string) (string, error) {
 	*/
 }
 
-// Get URLs by user ID from map storage
+// GetUserURLs get URLs by user ID from map storage
 func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
 	userMap := r.userLinks[userID]
 	result := make(map[string]string)
