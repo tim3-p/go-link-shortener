@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/caarlos0/env"
 	"github.com/jackc/pgx/v4"
@@ -26,6 +29,7 @@ func SetCommandLineFlags() {
 	flag.StringVar(&configs.EnvConfig.FileStoragePath, "f", configs.EnvConfig.FileStoragePath, "file storage path")
 	flag.StringVar(&configs.EnvConfig.DatabaseDSN, "d", configs.EnvConfig.DatabaseDSN, "database connection string")
 	flag.BoolVar(&configs.EnvConfig.EnableHTTPS, "s", configs.EnvConfig.EnableHTTPS, "HTTPS server")
+	flag.StringVar(&configs.EnvConfig.ConfigJson, "с", configs.EnvConfig.ConfigJson, "read config from json file")
 	flag.Parse()
 }
 
@@ -33,6 +37,21 @@ func InitConfig() error {
 	err := env.Parse(&configs.EnvConfig)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func InitJsonConfig() error {
+	jsonFile, err := os.OpenFile(configs.EnvConfig.ConfigJson, os.O_RDONLY, 0644)
+	if err != nil {
+		return err
+	} else {
+		jsonBody, err := io.ReadAll(jsonFile)
+		if err != nil {
+			return err
+		} else if err = json.Unmarshal(jsonBody, &configs.EnvConfig); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -45,6 +64,13 @@ func main() {
 		log.Fatal(err)
 	}
 	SetCommandLineFlags()
+
+	if configs.EnvConfig.ConfigJson != "" {
+		err = InitJsonConfig()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	var repository storage.Repository
 
 	if configs.EnvConfig.DatabaseDSN != "" {
