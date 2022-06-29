@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/caarlos0/env"
 	"github.com/jackc/pgx/v4"
@@ -59,6 +61,9 @@ func InitJsonConfig() error {
 func main() {
 	fmt.Printf("Build version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	err := InitConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -103,13 +108,29 @@ func main() {
 
 	r := app.NewRouter(handler)
 
+	srv := &http.Server{
+		Addr:    configs.EnvConfig.ServerAddress,
+		Handler: r,
+	}
+
 	if configs.EnvConfig.EnableHTTPS {
 		err = app.GenerateCert()
 		if err != nil {
 			log.Fatal(err)
 		}
-		http.ListenAndServeTLS(configs.EnvConfig.ServerAddress, app.CertFile, app.KeyFile, r)
+		go srv.ListenAndServeTLS(app.CertFile, app.KeyFile)
 	} else {
-		http.ListenAndServe(configs.EnvConfig.ServerAddress, r)
+		go srv.ListenAndServe()
+	}
+
+	sh := make(chan os.Signal, 1)
+	signal.Notify(sh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	v := <-sh
+
+	log.Printf("Recived signal: %v", v)
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("HTTP server shutdown with error: %v", err)
 	}
 }
