@@ -13,4 +13,5 @@ type Repository interface {
 	Get(key, userID string) (string, error)
 	GetUserURLs(userID string) (map[string]string, error)
 	Delete(keys []string, userID string) error
+	GetStats() (int, int, error)
 }

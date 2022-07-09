@@ -90,3 +90,8 @@ func (r *FileRepository) GetUserURLs(userID string) (map[string]string, error) {
 func (r *FileRepository) Delete(keys []string, userID string) error {
 	return nil
 }
+
+// Returs stats from file storage
+func (r *FileRepository) GetStats() (int, int, error) {
+	return 0, 0, nil
+}

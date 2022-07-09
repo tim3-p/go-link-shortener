@@ -7,6 +7,7 @@ type Config struct {
 	DatabaseDSN     string `json:"database_dsn" env:"DATABASE_DSN" envDefault:""`
 	EnableHTTPS     bool   `json:"enable_https" env:"ENABLE_HTTPS" envDefault:"false"`
 	ConfigJson      string `json:"" env:"CONFIG"`
+	TrustedSubnet   string `json:"trusted_subnet" env:"TRUSTED_SUBNET" envDefault:"127.0.0.1"`
 }
 
 var EnvConfig Config

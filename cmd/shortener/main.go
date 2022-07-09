@@ -32,6 +32,7 @@ func SetCommandLineFlags() {
 	flag.StringVar(&configs.EnvConfig.DatabaseDSN, "d", configs.EnvConfig.DatabaseDSN, "database connection string")
 	flag.BoolVar(&configs.EnvConfig.EnableHTTPS, "s", configs.EnvConfig.EnableHTTPS, "HTTPS server")
 	flag.StringVar(&configs.EnvConfig.ConfigJson, "с", configs.EnvConfig.ConfigJson, "read config from json file")
+	flag.StringVar(&configs.EnvConfig.TrustedSubnet, "t", configs.EnvConfig.TrustedSubnet, "trusted subnet address")
 	flag.Parse()
 }
 
