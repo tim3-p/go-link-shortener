@@ -70,3 +70,8 @@ func (r *MapRepository) GetUserURLs(userID string) (map[string]string, error) {
 func (r *MapRepository) Delete(keys []string, userID string) error {
 	return nil
 }
+
+// Returs stats from map storage
+func (r *MapRepository) GetStats() (int, int, error) {
+	return len(r.urlBase), len(r.userLinks), nil
+}

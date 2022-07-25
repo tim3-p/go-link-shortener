@@ -88,3 +88,17 @@ func (r *DBRepository) Delete(keys []string, userID string) error {
 	}
 	return nil
 }
+
+// Returs stats from DB
+func (r *DBRepository) GetStats() (int, int, error) {
+	sql := `select urls, users from (select count(*) from urls_base where deleted_at = false), (select count(distinct user_id) from urls_base)`
+	row := r.connection.QueryRow(context.Background(), sql)
+	var urls int
+	var users int
+	err := row.Scan(&urls, &users)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return urls, users, nil
+}

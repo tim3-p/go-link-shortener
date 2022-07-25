@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +18,8 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/app"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
+	pb "github.com/tim3-p/go-link-shortener/proto"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -32,6 +35,7 @@ func SetCommandLineFlags() {
 	flag.StringVar(&configs.EnvConfig.DatabaseDSN, "d", configs.EnvConfig.DatabaseDSN, "database connection string")
 	flag.BoolVar(&configs.EnvConfig.EnableHTTPS, "s", configs.EnvConfig.EnableHTTPS, "HTTPS server")
 	flag.StringVar(&configs.EnvConfig.ConfigJson, "с", configs.EnvConfig.ConfigJson, "read config from json file")
+	flag.StringVar(&configs.EnvConfig.TrustedSubnet, "t", configs.EnvConfig.TrustedSubnet, "trusted subnet address")
 	flag.Parse()
 }
 
@@ -133,4 +137,13 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("HTTP server shutdown with error: %v", err)
 	}
+
+	listen, err := net.Listen("tcp", configs.EnvConfig.GrpcServerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterShortenerServer(grpcServer, app.NewGrpcAppHandler(repository))
+	grpcServer.Serve(listen)
 }

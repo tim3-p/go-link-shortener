@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/http/pprof"
 
@@ -46,6 +47,7 @@ func NewRouter(handler *AppHandler) chi.Router {
 	r.Get("/debug/pprof/symbol", pprof.Symbol)
 	r.Get("/debug/pprof/trace", pprof.Trace)
 	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	r.Get("/api/internal/stats", handler.StatsHandler)
 
 	return r
 }
@@ -298,4 +300,55 @@ func (h *AppHandler) DeleteBatchHandler(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusAccepted)
+}
+
+// StatsHandler - Returns links and users stats.
+// Output:
+// # Request
+// GET /api/internal/stats
+//
+// # Response
+//   {
+//     “urls“: “<int>”,
+//	   “users“: “<int>”
+//   }
+// HTTP/1.1 200 OK
+// Content-Type: application/json; charset=UTF-8
+
+func (h *AppHandler) StatsHandler(w http.ResponseWriter, r *http.Request) {
+
+	if configs.EnvConfig.TrustedSubnet == "" {
+		http.Error(w, "You don't have access to this handler", http.StatusForbidden)
+		return
+	}
+
+	_, IPNet, err := net.ParseCIDR(configs.EnvConfig.TrustedSubnet)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	if !IPNet.Contains(net.ParseIP(r.Header.Get("X-Real-IP"))) {
+		http.Error(w, "You subnet don't have access to this handler", http.StatusForbidden)
+		return
+	}
+
+	urls, users, err := h.storage.GetStats()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	res := models.StatsResponse{URLs: urls, Users: users}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Add("Accept", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonRes)
 }
