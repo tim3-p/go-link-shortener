@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +18,8 @@ import (
 	"github.com/tim3-p/go-link-shortener/internal/app"
 	"github.com/tim3-p/go-link-shortener/internal/configs"
 	"github.com/tim3-p/go-link-shortener/internal/storage"
+	pb "github.com/tim3-p/go-link-shortener/proto"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -134,4 +137,13 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("HTTP server shutdown with error: %v", err)
 	}
+
+	listen, err := net.Listen("tcp", configs.EnvConfig.GrpcServerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterShortenerServer(grpcServer, app.NewGrpcAppHandler(repository))
+	grpcServer.Serve(listen)
 }

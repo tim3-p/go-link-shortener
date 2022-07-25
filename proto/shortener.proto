@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package shortener;
+
+option go_package = "./shortener.grpc";
+
+message Empty{}
+
+message StatsResponse {
+  int32 urls_count = 1;
+  int32 users_count = 2;
+}
+
+message SimpleRequest {
+  string value = 1;
+}
+
+message SimpleResponse {
+  string value = 1;
+}
+
+message UserUrlsResponse {
+  message URL {
+    string ShortURL = 1;
+    string OriginURL = 2;
+  }
+  repeated URL URLs = 1;
+}
+
+message ShortenBatchRequest {
+  message URL {
+    string correlationID = 1;
+    string originalURL = 2;
+  }
+  repeated URL BatchURL = 1;
+}
+
+message ShortenBatchResponse {
+  message URL {
+    string correlationID = 1;
+    string shortURL = 2;
+  }
+  repeated URL BatchURL = 1;
+}
+
+message DeleteBatchHandlerRequest {
+  repeated string ID = 1;
+}
+
+service Shortener {
+    rpc DBPing(Empty) returns(Empty);
+    rpc GetHandler(SimpleRequest) returns(SimpleResponse);
+    rpc PostHandler(SimpleRequest) returns(SimpleResponse);
+    rpc UserUrls(Empty) returns(UserUrlsResponse);
+    rpc ShortenBatchHandler(ShortenBatchRequest) returns(ShortenBatchResponse);
+    rpc DeleteBatchHandler(DeleteBatchHandlerRequest) returns(Empty);
+    rpc StatsHandler(Empty) returns(StatsResponse);
+}

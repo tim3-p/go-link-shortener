@@ -15,6 +15,13 @@ require (
 )
 
 require (
+	github.com/golang/protobuf v1.5.2 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/protobuf v1.27.1
+)
+
+require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
@@ -33,5 +40,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/grpc v1.48.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
